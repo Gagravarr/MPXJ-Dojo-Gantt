@@ -24,6 +24,10 @@ import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.Task;
 import net.sf.mpxj.TaskContainer;
 
+/**
+ * Converter which uses MPXJ to turn Microsoft Project files
+ *  into JSON, in the format used by the Dojo Gantt library 
+ */
 public class DojoGanttJSON {
     public static String toJSON(ProjectFile project) throws IOException {
         StringWriter writer = new StringWriter();
