@@ -21,6 +21,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import net.sf.mpxj.ProjectFile;
+import net.sf.mpxj.Resource;
+import net.sf.mpxj.ResourceAssignment;
 import net.sf.mpxj.Task;
 import net.sf.mpxj.TaskContainer;
 
@@ -28,6 +30,7 @@ import net.sf.mpxj.TaskContainer;
  * Converter which uses MPXJ to turn Microsoft Project files
  *  into JSON, in the format used by the Dojo Gantt library 
  */
+@SuppressWarnings("unchecked")
 public class DojoGanttJSON {
     public static String toJSON(ProjectFile project) throws IOException {
         StringWriter writer = new StringWriter();
@@ -59,6 +62,20 @@ public class DojoGanttJSON {
             
             // TODO The rest
             
+            // Handle the resources, as best as we can
+            StringBuffer taskOwner = new StringBuffer();
+            for (ResourceAssignment ra : task.getResourceAssignments()) {
+                Resource resource = ra.getResource();
+                if (resource != null) {
+                    if (taskOwner.length() > 0) {
+                        taskOwner.append(", ");
+                    }
+                    taskOwner.append(resource.getName());
+                }
+            }
+            json.put("taskOwner", taskOwner);
+            
+            // Recurse into any children
             JSONArray children = new JSONArray();
             handleTaskContainer(task, children);
             json.put("children", children);

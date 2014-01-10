@@ -14,19 +14,9 @@
 package org.gagravarr.mpxj.json;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-
-import javax.management.RuntimeErrorException;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.ProjectFile;
-import net.sf.mpxj.Task;
-import net.sf.mpxj.TaskContainer;
 import net.sf.mpxj.mpp.MPPReader;
 import net.sf.mpxj.mpx.MPXReader;
 
@@ -35,16 +25,21 @@ import net.sf.mpxj.mpx.MPXReader;
  */
 public class ProjectToJSON {
     public static void main(String[] args) throws Exception {
-        if (args.length < 2) {
+        if (args.length < 1) {
             System.err.println("Use:");
             System.err.println("   ProjectToJSON <project file> [json file]");
             System.exit(1);
         }
         
+        File input = new File(args[0]);
+        if (! input.exists()) {
+            System.err.println("Not found: " + input);
+            System.exit(2);
+        }
+        
         ProjectFile project = null;
-        File input = new File(args[1]);
         try {
-            if (args[1].endsWith(".mpx")) {
+            if (input.getName().endsWith(".mpx")) {
                 MPXReader reader = new MPXReader();
                 project = reader.read(input);
             } else {
