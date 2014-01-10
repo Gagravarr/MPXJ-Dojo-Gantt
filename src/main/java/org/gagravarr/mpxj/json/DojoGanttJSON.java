@@ -17,9 +17,11 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import net.sf.mpxj.ProjectFile;
+import net.sf.mpxj.Task;
 import net.sf.mpxj.TaskContainer;
 
 public class DojoGanttJSON {
@@ -31,11 +33,33 @@ public class DojoGanttJSON {
     
     public static void toJSON(ProjectFile project, Writer out) throws IOException {
         JSONObject json = new JSONObject();
-        handleTaskContainer(project, json);
+        
+        // Boiler plate
+        json.put("identifier", ID);        
+        
+        // Start from the root
+        JSONArray items = new JSONArray();
+        handleTaskContainer(project, items);
+        json.put("items", items);
+        
+        // Have it output as JSON
         json.writeJSONString(out);
     }
     
-    protected static void handleTaskContainer(TaskContainer task, JSONObject json) {
-        // TODO
+    protected static final String ID = "id";
+    protected static void handleTaskContainer(TaskContainer tasks, JSONArray items) {
+        for (Task task : tasks.getChildTasks()) {
+            JSONObject json = new JSONObject();
+            json.put(ID, task.getUniqueID());
+            json.put("name", task.getName());
+            
+            // TODO The rest
+            
+            JSONArray children = new JSONArray();
+            handleTaskContainer(task, children);
+            json.put("children", children);
+            
+            items.add(json);
+        }
     }
 }
