@@ -1,0 +1,17 @@
+*.class
+
+# Build Locations #
+target
+build
+
+# Eclipse Files #
+.classpath
+.project
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# Editor / Tmp File #
+.*.swp
