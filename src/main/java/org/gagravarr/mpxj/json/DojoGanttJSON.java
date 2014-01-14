@@ -16,6 +16,11 @@ package org.gagravarr.mpxj.json;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -60,7 +65,12 @@ public class DojoGanttJSON {
             json.put(ID, task.getUniqueID());
             json.put("name", task.getName());
             
-            // TODO The rest
+            json.put("startdate", formatDate(task.getStart()));
+            // TODO Is the duration really in days, or something else?
+            json.put("duration", formatInterval(task.getFinish(), task.getStart()));
+            json.put("percentage", task.getPercentageComplete());
+            
+            // TODO The supply the remainder of the interesting details
             
             // Handle the resources, as best as we can
             StringBuffer taskOwner = new StringBuffer();
@@ -82,5 +92,46 @@ public class DojoGanttJSON {
             
             items.add(json);
         }
+    }
+    
+    public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+    /**
+     * Returns a ISO 8601 representation of the given date. This method 
+     * is thread safe and non-blocking.
+     */
+    public static String formatDate(Date date) {
+        Calendar calendar = GregorianCalendar.getInstance(UTC, Locale.US);
+        calendar.setTime(date);
+        return String.format(
+                "%04d-%02d-%02d",
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH) + 1,
+                calendar.get(Calendar.DAY_OF_MONTH));
+    }
+    /**
+     * Returns a ISO 8601 representation of the given date and time. This method 
+     * is thread safe and non-blocking.
+     */
+    public static String formatDateTime(Date date) {
+        Calendar calendar = GregorianCalendar.getInstance(UTC, Locale.US);
+        calendar.setTime(date);
+        return String.format(
+                "%04d-%02d-%02dT%02d:%02d:%02dZ",
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH) + 1,
+                calendar.get(Calendar.DAY_OF_MONTH),
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                calendar.get(Calendar.SECOND));
+    }
+    
+    public static final long DAY_IN_MS = 24*60*60*1000;
+    public static int formatInterval(Date finish, Date start) {
+        if (finish == null || start == null) {
+            return 0;
+        }
+        long intervalMS = finish.getTime() - start.getTime();
+        long intervalDays = intervalMS / DAY_IN_MS;
+        return (int)intervalDays;
     }
 }
