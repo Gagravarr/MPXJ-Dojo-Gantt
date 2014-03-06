@@ -60,6 +60,15 @@ public class DojoGanttJSON {
     
     protected static final String ID = "id";
     protected static void handleTaskContainer(TaskContainer tasks, JSONArray items) {
+        // The top level project needs slightly different keys to all others
+        String childrenKey = "children";
+        String startKey = "starttime";
+        if (tasks instanceof ProjectFile) {
+            childrenKey = "tasks";
+            startKey = "startdate";
+        }
+        
+        // Process the parent task, and recurse into children
         boolean isFirst = true;
         for (Task task : tasks.getChildTasks()) {
             JSONObject json = new JSONObject();
@@ -76,7 +85,7 @@ public class DojoGanttJSON {
                 }
             }
             
-            json.put("startdate", formatDate(task.getStart()));
+            json.put(startKey, formatDate(task.getStart()));
             // TODO Is the duration really in days, or something else?
             json.put("duration", formatInterval(task.getFinish(), task.getStart()));
             json.put("percentage", task.getPercentageComplete());
@@ -99,7 +108,7 @@ public class DojoGanttJSON {
             // Recurse into any children
             JSONArray children = new JSONArray();
             handleTaskContainer(task, children);
-            json.put("children", children);
+            json.put(childrenKey, children);
             
             items.add(json);
         }
