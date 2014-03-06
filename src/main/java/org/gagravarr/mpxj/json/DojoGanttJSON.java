@@ -69,21 +69,25 @@ public class DojoGanttJSON {
         }
         
         // Process the parent task, and recurse into children
-        boolean isFirst = true;
+        Task prevTask = null;
         for (Task task : tasks.getChildTasks()) {
             JSONObject json = new JSONObject();
             json.put(ID, task.getUniqueID());
             json.put("name", task.getName());
             
-            if (isFirst) {
-                // 1st children don't reference the parent
-                isFirst = false;
+            if (prevTask == null) {
+                // 1st children don't ever reference the parent
             } else {
-                // 2nd and subsequent children need the parent's ID, if defined
-                if (tasks instanceof Task) {
-                    json.put("previousTaskId", ((Task)tasks).getUniqueID());
+                // If this is a second or subsequent child, and only if it
+                //  itself doesn't have children, and only if this tasks starts
+                //  after the previous one, output the previous Tasks's ID
+                if (startsAfter(task, prevTask)) {
+                    if (task.getChildTasks().size() == 0) {
+                        json.put("previousTaskId", prevTask.getUniqueID());
+                    }
                 }
             }
+            prevTask = task;
             
             json.put(startKey, formatDate(task.getStart()));
             // TODO Is the duration really in days, or something else?
@@ -112,6 +116,20 @@ public class DojoGanttJSON {
             
             items.add(json);
         }
+    }
+    
+    /**
+     * Checks to see if a given task starts after another one,
+     * normally used when checking for overlaping vs sequential siblings
+     */
+    public static boolean startsAfter(Task task, Task prevTask) {
+        if (task.getStart() != null && prevTask.getStart() != null) {
+            // Check how the dates compare
+            if (task.getStart().after(prevTask.getStart())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
@@ -146,12 +164,14 @@ public class DojoGanttJSON {
     }
     
     public static final long DAY_IN_MS = 24*60*60*1000;
+    public static final int DOJO_HOURS_IN_A_DAY = 8;
+    private static final long MS_TO_HOURS = DAY_IN_MS / DOJO_HOURS_IN_A_DAY;
     public static int formatInterval(Date finish, Date start) {
         if (finish == null || start == null) {
             return 0;
         }
         long intervalMS = finish.getTime() - start.getTime();
-        long intervalDays = intervalMS / DAY_IN_MS;
-        return (int)intervalDays;
+        long intervalDojoHours = intervalMS / MS_TO_HOURS;
+        return (int)intervalDojoHours;
     }
 }
