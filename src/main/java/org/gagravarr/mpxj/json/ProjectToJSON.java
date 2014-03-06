@@ -14,6 +14,7 @@
 package org.gagravarr.mpxj.json;
 
 import java.io.File;
+import java.io.PrintStream;
 
 import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.ProjectFile;
@@ -50,6 +51,11 @@ public class ProjectToJSON {
             throw new RuntimeException("Error reading project file", e);
         }
         
-        System.out.println(DojoGanttJSON.toJSON(project));
+        PrintStream out = System.out;
+        if (args.length >= 2) {
+            out = new PrintStream(args[1]);
+        }
+        out.println( DojoGanttJSON.toJSON(project) );
+        out.flush();
     }
 }
