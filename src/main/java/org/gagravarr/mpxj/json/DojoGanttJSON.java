@@ -60,10 +60,21 @@ public class DojoGanttJSON {
     
     protected static final String ID = "id";
     protected static void handleTaskContainer(TaskContainer tasks, JSONArray items) {
+        boolean isFirst = true;
         for (Task task : tasks.getChildTasks()) {
             JSONObject json = new JSONObject();
             json.put(ID, task.getUniqueID());
             json.put("name", task.getName());
+            
+            if (isFirst) {
+                // 1st children don't reference the parent
+                isFirst = false;
+            } else {
+                // 2nd and subsequent children need the parent's ID, if defined
+                if (tasks instanceof Task) {
+                    json.put("previousTaskId", ((Task)tasks).getUniqueID());
+                }
+            }
             
             json.put("startdate", formatDate(task.getStart()));
             // TODO Is the duration really in days, or something else?
@@ -83,7 +94,7 @@ public class DojoGanttJSON {
                     taskOwner.append(resource.getName());
                 }
             }
-            json.put("taskOwner", taskOwner);
+            json.put("taskOwner", taskOwner.toString());
             
             // Recurse into any children
             JSONArray children = new JSONArray();
